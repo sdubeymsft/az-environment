@@ -1,0 +1,2 @@
+# az-environment
+Templates and scripts to create secured and protected environment in Azure Subscription to host applications and solutions in compliant manner. Admins can use these scripts and templates to create initial n/w and security baseline configuration and use RBAC to grant others access to carry out specific responsibilities. Automation uses Azure Policies to enforce rules to maintain environment in compliance.
