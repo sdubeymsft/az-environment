@@ -1,10 +1,23 @@
+
+#u="<userName>"
+#o="<objectId>"
+#s="<subscriptionId>"
+
 az cloud set -n AzureUSGovernment
-az login -u "admin@<tenant>.onmicrosoft.com"
-az account set -s "inspiresub"
+az login -u $u
+az account set -s $s
 
-$g = "myRG"
-$l = "USGov Virginia"
+g="myRG"
+l="USGov Virginia"
 
-az group create -g $g -l $l
+# retrieve
+#az ad  user show --upn-or-object-id "admin@azgovdf.onmicrosoft.com" --query objectId 
 
-az group deployment create -g $g --template-file "C:\Users\sdubey\Documents\GitHub\sdubeymsft\az-environment\templates\vnet-subnets-networkwwatcher\azuredeploy.json"
+az group create -g $g -l "$l"
+#az group delete -g $g -y
+
+# networking
+az group deployment create -g $g --template-file "templates/vnet-subnets-networkwwatcher/azuredeploy.json"
+
+# keyvault
+az group deployment create -g $g --template-file "templates/keyvault/azuredeploy.json" --parameters "objectId=$o"

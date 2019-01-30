@@ -6,14 +6,14 @@
             "type": "string",
             "defaultValue": "VirtualNetwork",
             "metadata": {
-                "description": "Name of the Virtual Network"
+                "description": "Name of the Virtual Network."
             }
         },
         "networkWatcherName": {
             "type": "string",
             "defaultValue": "NetworkWatcher",
             "metadata": {
-                "description": "Name of the Network Watcher"
+                "description": "Name of the Network Watcher."
             }
         }
     },
@@ -21,15 +21,45 @@
         "location": "[resourceGroup().location]",
         "vnetName": "[parameters('vnetName')]",
         "addressPrefix": "10.0.0.0/16",
-        "appSubnetName": "[concat(variables('vnetName'), '-Frontend')]",
+        "appSubnetName": "[concat(variables('vnetName'), '-App')]",
         "appSubnetPrefix": "10.0.0.0/24",
+        "appNSGName": "[concat(variables('vnetName'), '-App-nsg')]",
         "feSubnetName": "[concat(variables('vnetName'), '-Frontend')]",
         "feSubnetPrefix": "10.0.1.0/24",
+        "feNSGName": "[concat(variables('vnetName'), '-Frontend-nsg')]",
         "beSubnetName": "[concat(variables('vnetName'), '-Backend')]",
         "beSubnetPrefix": "10.0.2.0/24",
+        "beNSGName": "[concat(variables('vnetName'), '-Backend-nsg')]",
+        "doSubnetName": "[concat(variables('vnetName'), '-DevOps')]",
+        "doSubnetPrefix": "10.0.3.0/24",
+        "doNSGName": "[concat(variables('vnetName'), '-DevOps-nsg')]",
         "networkWatcherName": "[parameters('networkWatcherName')]"
     },
     "resources": [
+        {
+            "apiVersion": "2018-12-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('appNSGName')]",
+            "location": "[variables('location')]"
+        },
+        {
+            "apiVersion": "2018-12-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('feNSGName')]",
+            "location": "[variables('location')]"
+        },
+        {
+            "apiVersion": "2018-12-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('beNSGName')]",
+            "location": "[variables('location')]"
+        },
+        {
+            "apiVersion": "2018-12-01",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('doNSGName')]",
+            "location": "[variables('location')]"
+        },
         {
             "apiVersion": "2018-12-01",
             "type": "Microsoft.Network/virtualNetworks",
@@ -45,19 +75,37 @@
                     {
                         "name": "[variables('appSubnetName')]",
                         "properties": {
-                            "addressPrefix": "[variables('appSubnetPrefix')]"
+                            "addressPrefix": "[variables('appSubnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('appNSGName'))]"
+                            }
                         }
                     },
                     {
                         "name": "[variables('feSubnetName')]",
                         "properties": {
-                            "addressPrefix": "[variables('feSubnetPrefix')]"
+                            "addressPrefix": "[variables('feSubnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('feNSGName'))]"
+                            }
                         }
                     },
                     {
                         "name": "[variables('beSubnetName')]",
                         "properties": {
-                            "addressPrefix": "[variables('beSubnetPrefix')]"
+                            "addressPrefix": "[variables('beSubnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('beNSGName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('doSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('doSubnetPrefix')]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('doNSGName'))]"
+                            }
                         }
                     }
                 ]
