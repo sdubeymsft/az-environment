@@ -1,0 +1,10 @@
+az cloud set -n AzureUSGovernment
+az login -u "admin@<tenant>.onmicrosoft.com"
+az account set -s "inspiresub"
+
+$g = "myRG"
+$l = "USGov Virginia"
+
+az group create -g $g -l $l
+
+az group deployment create -g $g --template-file "C:\Users\sdubey\Documents\GitHub\sdubeymsft\az-environment\templates\vnet-subnets-networkwwatcher\azuredeploy.json"

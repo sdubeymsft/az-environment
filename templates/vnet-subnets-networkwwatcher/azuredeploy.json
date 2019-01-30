@@ -1,0 +1,67 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnetName": {
+            "type": "string",
+            "defaultValue": "VirtualNetwork",
+            "metadata": {
+                "description": "Name of the Virtual Network"
+            }
+        },
+        "networkWatcherName": {
+            "type": "string",
+            "defaultValue": "NetworkWatcher",
+            "metadata": {
+                "description": "Name of the Network Watcher"
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "vnetName": "[parameters('vnetName')]",
+        "addressPrefix": "10.0.0.0/16",
+        "feSubnetName": "[concat(variables('vnetName'), '-Frontend')]",
+        "feSubnetPrefix": "10.0.1.0/24",
+        "beSubnetName": "[concat(variables('vnetName'), '-Backend')]",
+        "beSubnetPrefix": "10.0.50.0/24",
+        "networkWatcherName": "[parameters('networkWatcherName')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-12-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnetName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('feSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('feSubnetPrefix')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('beSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('beSubnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2018-12-01",
+            "type": "Microsoft.Network/networkWatchers",
+            "name": "[variables('networkWatcherName')]",
+            "location": "[variables('location')]",
+            "properties": {},
+            "resources": []
+        }
+    ]
+}
