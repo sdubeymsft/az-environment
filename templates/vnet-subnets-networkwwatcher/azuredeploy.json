@@ -21,10 +21,12 @@
         "location": "[resourceGroup().location]",
         "vnetName": "[parameters('vnetName')]",
         "addressPrefix": "10.0.0.0/16",
+        "appSubnetName": "[concat(variables('vnetName'), '-Frontend')]",
+        "appSubnetPrefix": "10.0.0.0/24",
         "feSubnetName": "[concat(variables('vnetName'), '-Frontend')]",
         "feSubnetPrefix": "10.0.1.0/24",
         "beSubnetName": "[concat(variables('vnetName'), '-Backend')]",
-        "beSubnetPrefix": "10.0.50.0/24",
+        "beSubnetPrefix": "10.0.2.0/24",
         "networkWatcherName": "[parameters('networkWatcherName')]"
     },
     "resources": [
@@ -40,6 +42,12 @@
                     ]
                 },
                 "subnets": [
+                    {
+                        "name": "[variables('appSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('appSubnetPrefix')]"
+                        }
+                    },
                     {
                         "name": "[variables('feSubnetName')]",
                         "properties": {
