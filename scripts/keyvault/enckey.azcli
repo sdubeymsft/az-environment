@@ -1,0 +1,9 @@
+#!/bin/bash
+
+g=$1
+sek="StrgEncKey1"
+sekb="StrgEncKey1-Bkp"
+
+vn=$(az keyvault list -g $g --query '[].{Name:name}' -o tsv | head -1)
+az keyvault key create --vault-name $vn -n $sek --protection software
+#az keyvault key backup --vault-name $vn -n $sek -f <outputFile>

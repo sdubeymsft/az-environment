@@ -1,3 +1,4 @@
+#!/bin/bash
 
 #u="<userName>"
 #o="<objectId>"
@@ -21,3 +22,4 @@ az group deployment create -g $g --template-file "templates/vnet-subnets-network
 
 # keyvault
 az group deployment create -g $g --template-file "templates/keyvault/azuredeploy.json" --parameters "objectId=$o"
+./scripts/keyvault/enckey.azcli $g
