@@ -4,6 +4,22 @@ g=$1
 sek="StrgEncKey1"
 sekb="StrgEncKey1-Bkp"
 
-vn=$(az keyvault list -g $g --query '[].{Name:name}' -o tsv | head -1)
-az keyvault key create --vault-name $vn -n $sek --protection software
-#az keyvault key backup --vault-name $vn -n $sek -f <outputFile>
+vn=$(az keyvault list -g $g --query "[].{Name:name}" -o tsv | head -1)
+
+k=$(az keyvault key list-versions --vault-name $vn -n $sek --query "[?contains(kid,'$sek')].kid" -o tsv | head -1)
+
+if [ -z "$k" ]
+then
+    echo "in if"
+    az keyvault key create --vault-name $vn -n $sek --protection software -
+    #az keyvault key backup --vault-name $vn -n $sek -f <outputFile>
+
+    k=$(az keyvault key list-versions --vault-name $vn -n $sek --query "[?contains(kid,'$sek')].kid" -o tsv | head -1)
+fi
+
+s=$(az storage account list -g $g --query "[].name" -o tsv | head -1)
+p=$(az storage account list -g $g --query "[].identity.principalId" -o tsv | head -1)
+IFS='/' read -ra ka <<< "$k"
+
+az keyvault set-policy -g $g -n $vn --object-id "$p" --key-permissions get unwrapkey wrapkey
+az storage account update -g $g -n $s --encryption-key-source "Microsoft.Keyvault" --encryption-key-vault "https://${ka[2]}/" --encryption-key-name "${ka[4]}" --encryption-key-version "${ka[5]}"

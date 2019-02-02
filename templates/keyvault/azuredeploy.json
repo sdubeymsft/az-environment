@@ -4,7 +4,7 @@
     "parameters": {
         "keyVaultName": {
             "type": "string",
-            "defaultValue": "[take(uniqueString( resourceGroup().id, deployment().name ), 10)]",
+            "defaultValue": "[concat('keyv', take(uniqueString(resourceGroup().id), 12))]",
             "metadata": {
                 "description": "Name of the Key Vault."
             }
@@ -25,8 +25,9 @@
         "keysPermissions": {
             "type": "array",
             "defaultValue": [
+                "create",
                 "list",
-                "create"
+                "get"
             ],
             "metadata": {
                 "description": "Permissions to keys in the Key Vault. Valid values are: all, create, import, update, get, list, delete, backup, restore, encrypt, decrypt, wrapkey, unwrapkey, sign, and verify."
@@ -93,7 +94,7 @@
         {
             "type": "Microsoft.KeyVault/vaults",
             "name": "[parameters('keyVaultName')]",
-            "apiVersion": "2016-10-01",
+            "apiVersion": "2018-02-14",
             "location": "[variables('location')]",
             "properties": {
                 "enabledForDeployment": "[parameters('enableVaultForDeployment')]",
@@ -113,7 +114,9 @@
                 "sku": {
                     "name": "[parameters('skuName')]",
                     "family": "A"
-                }
+                },
+                "enableSoftDelete": true,
+                "enablePurgeProtection": true
             }
         }
     ]

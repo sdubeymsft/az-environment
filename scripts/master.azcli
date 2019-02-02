@@ -11,15 +11,16 @@ az account set -s $s
 g="myRG"
 l="USGov Virginia"
 
-# retrieve
-#az ad  user show --upn-or-object-id "admin@azgovdf.onmicrosoft.com" --query objectId 
-
 az group create -g $g -l "$l"
-#az group delete -g $g -y
+#az group delete -g $g -y --no-wait
+
+# storage
+az group deployment create -g $g --template-file "templates/storage/azuredeploy.json"
+
+# keyvault
+#o=$(#az ad  user show --upn-or-object-id "admin@<tenant>.onmicrosoft.com" --query objectId)
+az group deployment create -g $g --template-file "templates/keyvault/azuredeploy.json" --parameters "objectId=$o"
+./scripts/keyvault/enckey.azcli $g
 
 # networking
 az group deployment create -g $g --template-file "templates/vnet-subnets-networkwwatcher/azuredeploy.json"
-
-# keyvault
-az group deployment create -g $g --template-file "templates/keyvault/azuredeploy.json" --parameters "objectId=$o"
-./scripts/keyvault/enckey.azcli $g
