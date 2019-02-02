@@ -23,3 +23,5 @@ IFS='/' read -ra ka <<< "$k"
 
 az keyvault set-policy -g $g -n $vn --object-id "$p" --key-permissions get unwrapkey wrapkey
 az storage account update -g $g -n $s --encryption-key-source "Microsoft.Keyvault" --encryption-key-vault "https://${ka[2]}/" --encryption-key-name "${ka[4]}" --encryption-key-version "${ka[5]}"
+
+echo "StorageAccount=$s"
