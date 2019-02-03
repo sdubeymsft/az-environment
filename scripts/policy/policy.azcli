@@ -3,7 +3,7 @@
 s=$1
 g=$2
 
-az policy definition create --name "allowed-vmskus-def" --display-name "Allowed VM SKUs Definitions" --description "This policy defines a white list of VM SKUs can only be deployed." --rules "../templates/policy/allowedvmskus.rules.json" --params "../templates/policy/allowedvmskus.parameters.json" --mode All
+az policy definition create --name "allowed-vmskus-def" --display-name "Allowed VM SKUs Definitions" --description "This policy defines a white list of VM SKUs can only be deployed." --rules "templates/policy/allowedvmskus.rules.json" --params "templates/policy/allowedvmskus.parameters.json" --mode All
 az policy assignment create --name "allowed-vmskus-assign" --policy "allowed-vmskus-def" --scope "/subscriptions/$s/resourcegroups/$g"
-az policy definition create --name "deny-publicips" --display-name "Deny Public IPs Definitions" --description "This policy defines a rule to deny deployment of public ips." --rules "../templates/policy/denypublicips.rules.json" --mode All
+az policy definition create --name "deny-publicips" --display-name "Deny Public IPs Definitions" --description "This policy defines a rule to deny deployment of public ips." --rules "templates/policy/denypublicips.rules.json" --mode All
 az policy assignment create --name "deny-publicips-assign" --policy "deny-publicips" --scope "/subscriptions/$s/resourcegroups/$g"
