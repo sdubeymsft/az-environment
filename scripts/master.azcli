@@ -2,26 +2,32 @@
 
 #u="<userName>"
 #o="<objectId>"
+#o=$(az ad  user show --upn-or-object-id "admin@<tenant>.onmicrosoft.com" --query objectId)
 #s="<subscriptionId>"
 
 az cloud set -n AzureUSGovernment
 az login -u $u
 az account set -s $s
 
-g="myRG"
+g="demo"
 l="USGov Virginia"
 
 az group create -g $g -l "$l"
 #az group delete -g $g -y --no-wait
 
-# storage
-az group deployment create -g $g --template-file "templates/storage/azuredeploy.json"
+# storage and log analytics workspace
+az group deployment create -g $g --template-file "templates/audit-diag/azuredeploy.json"
 
 # keyvault
-#o=$(#az ad  user show --upn-or-object-id "admin@<tenant>.onmicrosoft.com" --query objectId)
 az group deployment create -g $g --template-file "templates/keyvault/azuredeploy.json" --parameters "objectId=$o"
 ./scripts/keyvault/enckey.azcli $g
 
 # networking
-s="<storageAccount>"
-az group deployment create -g $g --template-file "templates/vnet-subnets-networkwwatcher/azuredeploy.json" --parameters "storageAccount=$s"
+strg="diagnxfjyyjxkg52"
+az group deployment create -g $g --template-file "templates/vnet-subnets-networkwwatcher/azuredeploy.json" --parameters storageAccountName=$strg
+
+# vm (jump box)
+az group deployment create -g $g --template-file "templates/vm/azuredeploy.json" --parameters "templates/vm/azuredeploy.parameters.json" --parameters adminPassword="User@1234567" storageAccountName=$strg
+
+# policy
+./scripts/policy/policy.azcli $s $g

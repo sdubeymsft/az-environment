@@ -14,16 +14,29 @@
             "metadata": {
                 "description": "Type of Storage Account."
             }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('diag', take(uniqueString(resourceGroup().id), 12))]",
+            "metadata": {
+                "description": "Name of Storage Account."
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "[concat('loga', take(uniqueString(resourceGroup().id), 12))]",
+            "metadata": {
+                "description": "Name of Log Lnalytics workspace."
+            }
         }
     },
     "variables": {
-        "location": "[resourceGroup().location]",
-        "storageAccountName": "[concat('diag', take(uniqueString(resourceGroup().id), 12))]"
+        "location": "[resourceGroup().location]"
     },
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[variables('storageAccountName')]",
+            "name": "[parameters('storageAccountName')]",
             "location": "[variables('location')]",
             "apiVersion": "2018-07-01",
             "sku": {
@@ -34,6 +47,17 @@
                 "type": "SystemAssigned"
             },
             "properties": {}
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[parameters('workspaceName')]",
+            "apiVersion": "2017-04-26-preview",
+            "location": "[variables('location')]",
+            "properties": {
+                "sku": {
+                    "Name": "PerGB2018"
+                }
+            }
         }
     ]
 }
