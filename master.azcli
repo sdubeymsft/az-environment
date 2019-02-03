@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#u="<userName>"
+#o="<objectId>"
+#o=$(az ad  user show --upn-or-object-id "admin@<tenant>.onmicrosoft.com" --query objectId)
+#s="<subscriptionId>"
+
+az cloud set -n AzureUSGovernment
+az login -u $u
+az account set -s $s
+
+g="demoit"
+l="USGov Virginia"
+
+az group create -g $g -l "$l"
+#az group delete -g $g -y --no-wait
+
+# network-isolation: vnet, subnets, nsgs, storage and log analytics workspace
+az group deployment create -g $g --template-file "network-isolation/azuredeploy.json"
+
+# data-isolation: keyvault, storage encryption /w cmk
+strg="<diagStorageAccountName>"
+w="<logAnalyticsWorkspaceName>"
+az group deployment create -g $g --template-file "data-isolation/azuredeploy.json" --parameters objectId=$o storageAccountName=$strg workspaceName=$w
+./data-isolation/enckey.azcli $g
+
+# compute-isolation: vm (jump box)
+az group deployment create -g $g --template-file "compute-isolation/azuredeploy.json" --parameters "compute-isolation/azuredeploy.parameters.json" --parameters adminPassword=$pwd storageAccountName=$strg
+
+# monitor-policy: policy
+./monitor-policy/policy.azcli $s $g

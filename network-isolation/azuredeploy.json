@@ -2,24 +2,45 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "storageAccountName": {
+            "type": "string",
+            "defaultValue": "[concat('diag', take(uniqueString(resourceGroup().id), 12))]",
+            "metadata": {
+                "description": "Name of Storage Account."
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_ZRS",
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "Type of Storage Account."
+            }
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "[concat('loga', take(uniqueString(resourceGroup().id), 12))]",
+            "metadata": {
+                "description": "Name of Log Lnalytics workspace."
+            }
+        },
         "vnetName": {
             "type": "string",
-            "defaultValue": "VirtualNetwork",
+            "defaultValue": "vnet",
             "metadata": {
                 "description": "Name of the Virtual Network."
             }
         },
         "networkWatcherName": {
             "type": "string",
-            "defaultValue": "NetworkWatcher",
+            "defaultValue": "networkwatcher",
             "metadata": {
                 "description": "Name of the Network Watcher."
-            }
-        },
-        "storageAccountName": {
-            "type": "string",
-            "metadata": {
-                "description": "Name of the Storage Account to be used for archiving logs and metrics."
             }
         }
     },
@@ -27,21 +48,46 @@
         "location": "[resourceGroup().location]",
         "vnetName": "[parameters('vnetName')]",
         "addressPrefix": "10.0.0.0/16",
-        "appSubnetName": "[concat(variables('vnetName'), '-App')]",
+        "appSubnetName": "[concat(variables('vnetName'), '-app')]",
         "appSubnetPrefix": "10.0.0.0/24",
-        "appNSGName": "[concat(variables('vnetName'), '-App-nsg')]",
-        "feSubnetName": "[concat(variables('vnetName'), '-Frontend')]",
+        "appNSGName": "[concat(variables('vnetName'), '-app-nsg')]",
+        "feSubnetName": "[concat(variables('vnetName'), '-frontend')]",
         "feSubnetPrefix": "10.0.1.0/24",
-        "feNSGName": "[concat(variables('vnetName'), '-Frontend-nsg')]",
-        "beSubnetName": "[concat(variables('vnetName'), '-Backend')]",
+        "feNSGName": "[concat(variables('vnetName'), '-frontend-nsg')]",
+        "beSubnetName": "[concat(variables('vnetName'), '-backend')]",
         "beSubnetPrefix": "10.0.2.0/24",
-        "beNSGName": "[concat(variables('vnetName'), '-Backend-nsg')]",
-        "doSubnetName": "[concat(variables('vnetName'), '-DevOps')]",
+        "beNSGName": "[concat(variables('vnetName'), '-backend-nsg')]",
+        "doSubnetName": "[concat(variables('vnetName'), '-devops')]",
         "doSubnetPrefix": "10.0.3.0/24",
-        "doNSGName": "[concat(variables('vnetName'), '-DevOps-nsg')]",
+        "doNSGName": "[concat(variables('vnetName'), '-devops-nsg')]",
         "networkWatcherName": "[parameters('networkWatcherName')]"
     },
     "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[variables('location')]",
+            "apiVersion": "2018-07-01",
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "StorageV2",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[parameters('workspaceName')]",
+            "apiVersion": "2017-04-26-preview",
+            "location": "[variables('location')]",
+            "properties": {
+                "sku": {
+                    "Name": "PerGB2018"
+                }
+            }
+        },
         {
             "apiVersion": "2018-12-01",
             "type": "Microsoft.Network/networkSecurityGroups",
@@ -52,12 +98,15 @@
                     "type": "providers/diagnosticSettings",
                     "name": "[concat('Microsoft.Insights/', variables('appNSGName'), '-diag')]",
                     "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('appNSGName'))]"
                     ],
                     "apiVersion": "2017-05-01-preview",
                     "properties": {
                         "name": "[concat(variables('appNSGName'), '-diag')]",
                         "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "logs": [
                             {
                                 "category": "NetworkSecurityGroupEvent",
@@ -90,12 +139,15 @@
                     "type": "providers/diagnosticSettings",
                     "name": "[concat('Microsoft.Insights/', variables('feNSGName'), '-diag')]",
                     "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('feNSGName'))]"
                     ],
                     "apiVersion": "2017-05-01-preview",
                     "properties": {
                         "name": "[concat(variables('feNSGName'), '-diag')]",
                         "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "logs": [
                             {
                                 "category": "NetworkSecurityGroupEvent",
@@ -128,12 +180,15 @@
                     "type": "providers/diagnosticSettings",
                     "name": "[concat('Microsoft.Insights/', variables('beNSGName'), '-diag')]",
                     "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('beNSGName'))]"
                     ],
                     "apiVersion": "2017-05-01-preview",
                     "properties": {
                         "name": "[concat(variables('beNSGName'), '-diag')]",
                         "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "logs": [
                             {
                                 "category": "NetworkSecurityGroupEvent",
@@ -166,12 +221,15 @@
                     "type": "providers/diagnosticSettings",
                     "name": "[concat('Microsoft.Insights/', variables('doNSGName'), '-diag')]",
                     "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('doNSGName'))]"
                     ],
                     "apiVersion": "2017-05-01-preview",
                     "properties": {
                         "name": "[concat(variables('doNSGName'), '-diag')]",
                         "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+                        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
                         "logs": [
                             {
                                 "category": "NetworkSecurityGroupEvent",
@@ -259,5 +317,15 @@
             "properties": {},
             "resources": []
         }
-    ]
+    ],
+    "outputs": {
+        "storageAccountId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+        },
+        "workspaceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+        }
+    }
 }

@@ -41,12 +41,12 @@
     },
     "variables": {
         "location": "[resourceGroup().location]",
-        "nicName": "[concat(parameters('vmName'), 'Nic')]",
-        "nsgName": "[concat(parameters('vmName'), 'Nsg')]",
-        "virtualNetworkName": "VirtualNetwork",
-        "vnetSubnetName": "[concat(variables('virtualNetworkName'), '-DevOps')]",
-        "SubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('VirtualNetworkName'), variables('vnetSubnetName'))]",
-        "publicIpName": "[concat(parameters('vmName'), 'PublicIP')]"
+        "nicName": "[concat(parameters('vmName'), '-nic')]",
+        "nsgName": "[concat(parameters('vmName'), '-nsg')]",
+        "vnetName": "vnet",
+        "subnetName": "[concat(variables('vnetName'), '-devops')]",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('vnetName'), variables('subnetName'))]",
+        "publicIpName": "[concat(parameters('vmName'), 'pip')]"
     },
     "resources": [
         {
@@ -80,7 +80,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
-                                "id": "[variables('SubnetRef')]"
+                                "id": "[variables('subnetRef')]"
                             },
                             "publicIPAddress": {
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
