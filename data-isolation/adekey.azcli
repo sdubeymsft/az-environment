@@ -1,0 +1,9 @@
+#!/bin/bash
+
+g=$1
+
+vn=$(az keyvault list -g $g --query "[].{Name:name}" -o tsv | head -1)
+
+az vm encryption enable --resource-group $g --name "db" --disk-encryption-keyvault $vn --key-encryption-key "StrgEncKey1" --volume-type All
+
+az vm encryption show --resource-group $g --name "db" --query 'status'

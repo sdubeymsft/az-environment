@@ -46,7 +46,7 @@
         "vnetName": "vnet",
         "subnetName": "[concat(variables('vnetName'), '-devops')]",
         "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('vnetName'), variables('subnetName'))]",
-        "publicIpName": "[concat(parameters('vmName'), 'pip')]"
+        "publicIpName": "[concat(parameters('vmName'), '-pip')]"
     },
     "resources": [
         {
